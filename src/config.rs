@@ -331,10 +331,6 @@ impl Config {
         self.options().preset_column_widths
     }
 
-    pub fn continuous_swipe(&self) -> bool {
-        self.options().continuous_swipe.unwrap_or(true)
-    }
-
     pub fn swipe_gesture_direction(&self) -> SwipeGestureDirection {
         self.options()
             .swipe_gesture_direction
@@ -610,6 +606,7 @@ pub struct MainOptions {
 
     /// Swiping keeps sliding windows until the first or last window.
     /// Set to false to clamp so edge windows stay on-screen. Default: true.
+    #[allow(dead_code)]
     pub continuous_swipe: Option<bool>,
 
     /// Swipe sensitivity multiplier. Lower values = less distance per finger
