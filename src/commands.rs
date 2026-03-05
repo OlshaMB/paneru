@@ -424,7 +424,7 @@ fn command_center_window(
         return;
     }
 
-    if let Some((_, entity)) = windows.focused()
+    if let Some((window, entity)) = windows.focused()
         && let Some(size) = windows.size(entity)
     {
         let center = active_display.bounds().center();
@@ -432,6 +432,8 @@ fn command_center_window(
         reposition_entity(entity, origin, active_display.id(), &mut commands);
         window_manager.center_mouse(None, &active_display.bounds());
         reshuffle_around(entity, &mut commands);
+
+        debug!("Dimming window {}", window.id());
     }
 }
 

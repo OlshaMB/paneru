@@ -75,6 +75,7 @@ pub fn register_systems(app: &mut bevy::app::App) {
                 DISPLAY_CHANGE_CHECK_FREQ_MS,
             ))),
             systems::reshuffle_layout_strip,
+            systems::cleanup_on_exit,
         ),
     );
     app.add_systems(
@@ -99,7 +100,8 @@ pub fn register_systems(app: &mut bevy::app::App) {
                 .after(systems::animate_resize_entities)
                 .run_if(|config: Option<Res<Config>>| {
                     config.is_some_and(|config| {
-                        config.dim_inactive_opacity() > 0.0 || config.border_active_window()
+                        config.options().dim_inactive_color.is_some()
+                            || config.border_active_window()
                     })
                 }),
             systems::commit_window_position.after(systems::animate_entities),
@@ -131,7 +133,9 @@ pub fn register_triggers(app: &mut bevy::app::App) {
         .add_observer(triggers::stray_focus_observer)
         .add_observer(triggers::locate_dock_trigger)
         .add_observer(triggers::send_message_trigger)
-        .add_observer(triggers::window_removal_trigger);
+        .add_observer(triggers::window_removal_trigger)
+        .add_observer(triggers::dim_window_trigger)
+        .add_observer(triggers::dim_remove_window_trigger);
 }
 
 /// Marker component for the currently focused window.
