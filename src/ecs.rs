@@ -74,7 +74,6 @@ pub fn register_systems(app: &mut bevy::app::App) {
             systems::find_orphaned_workspaces.run_if(on_timer(Duration::from_millis(
                 DISPLAY_CHANGE_CHECK_FREQ_MS,
             ))),
-            systems::reshuffle_layout_strip,
             systems::cleanup_on_exit,
         ),
     );
@@ -135,6 +134,7 @@ pub fn register_triggers(app: &mut bevy::app::App) {
         .add_observer(triggers::send_message_trigger)
         .add_observer(triggers::window_removal_trigger)
         .add_observer(triggers::dim_window_trigger)
+        .add_observer(systems::reshuffle_layout_strip)
         .add_observer(triggers::dim_remove_window_trigger);
 }
 
@@ -182,10 +182,6 @@ pub struct WindowDraggedMarker {
     /// The ID of the display the window is being dragged on.
     pub display_id: CGDirectDisplayID,
 }
-
-/// Marker component indicating that windows around the marked entity need to be reshuffled.
-#[derive(Component)]
-pub struct ReshuffleAroundMarker;
 
 /// Marker component placed on a window that was resized internally to compensate
 /// for an adjacent stacked window's top-edge drag. When the OS echoes back a
@@ -327,6 +323,9 @@ pub struct LocateDockTrigger(pub Entity);
 #[derive(BevyEvent)]
 pub struct SendMessageTrigger(pub Event);
 
+#[derive(BevyEvent)]
+pub struct ReshuffleAroundTrigger(pub Entity);
+
 #[instrument(level = Level::TRACE, skip(commands))]
 pub fn reposition_entity(
     entity: Entity,
@@ -356,9 +355,7 @@ pub fn resize_entity(
 
 #[instrument(level = Level::TRACE, skip(commands))]
 pub fn reshuffle_around(entity: Entity, commands: &mut Commands) {
-    if let Ok(mut entity_commands) = commands.get_entity(entity) {
-        entity_commands.try_insert(ReshuffleAroundMarker);
-    }
+    commands.trigger(ReshuffleAroundTrigger(entity));
 }
 
 pub fn setup_bevy_app(sender: EventSender, receiver: Receiver<Event>) -> Result<BevyApp> {
